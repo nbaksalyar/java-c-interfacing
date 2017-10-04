@@ -1,0 +1,72 @@
+#!/bin/bash
+
+set -e;
+
+till_javah=false;
+no_native=false;
+
+for arg in "${@}"
+do
+    case "${arg}" in
+        "-h" | "--help")
+            echo " --------"
+            echo "| Usage: |"
+            echo " --------"
+            echo ""
+            echo "  $(basename ${0}) [options]"
+            echo -e "\n  Options:"
+            echo "    -0 | --javah                             run only until javah invocation"
+            echo "    -1 | --no-native                         do not run native build cmds"
+            exit 0
+            ;;
+        "-0" | "--javah")
+            if [[ "${till_javah}" == true ]]; then
+                echo "Incorrect usage! Please run with '--help' for usage details."
+                exit 1
+            fi
+            till_javah=true
+            ;;
+        "-1" | "--no-native")
+            if [[ "${no_native}" == true ]]; then
+                echo "Incorrect usage! Please run with '--help' for usage details."
+                exit 1
+            fi
+            no_native=true
+            ;;
+        *) 
+            echo "Incorrect usage! Please run with '--help' for usage details."
+            exit 1
+            ;;
+    esac
+done
+
+jni_src_dir="./jni-src";
+backend_src_dir="./backend-src";
+
+java_build_dir="./build/java";
+native_build_dir="./build/native";
+
+if [ ! -d "${java_build_dir}" ]; then
+    mkdir -p ${java_build_dir};
+fi
+
+if [ ! -d "${native_build_dir}" ]; then
+    mkdir -p ${native_build_dir}
+fi
+
+javac -d "${java_build_dir}" Frontend.java;
+javah -classpath "${java_build_dir}" -o "${java_build_dir}"/frontend.h Frontend;
+
+if [ ${till_javah} = true ]; then
+    exit 0
+fi
+
+if [ ${no_native} = false ]; then
+    gcc -shared -O2 -s -fPIC "${backend_src_dir}"/backend.c -I"${backend_src_dir}" -o "${native_build_dir}"/libbackend.so;
+
+    gcc -shared -O2 -s -fPIC "${jni_src_dir}"/frontend.c -I"${java_build_dir}" -I"${backend_src_dir}" -I/usr/lib/jvm/default-java/include/ -I/usr/lib/jvm/default-java/include/linux -L"${native_build_dir}" -lbackend -o "${native_build_dir}"/libfrontend.so;
+fi
+
+# set java.library.path to load the main shared object with JNI code.
+# specify LD_LIBRARY_PATH for the JNI shared object to load the other dependencies.
+LD_LIBRARY_PATH="${native_build_dir}" java -Djava.library.path="${native_build_dir}" -cp "${java_build_dir}" Frontend;
