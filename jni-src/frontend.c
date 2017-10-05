@@ -2,7 +2,9 @@
 #include "backend.h"
 #include "jni_utils.h"
 
-void backend_with_string_jni_cb(void *user_data, const char *result) {
+#include <malloc.h>
+
+static void backend_with_string_jni_cb(void *user_data, const char *result) {
     JniContext ctx = *(JniContext*)user_data;
 
     jstring java_result = (*ctx.env)->NewStringUTF(ctx.env, result);
@@ -46,4 +48,62 @@ JNIEXPORT void JNICALL Java_Frontend_BackendWithStringJNI(
     jni_ctx.cb_method_id = cb_method_id;
 
     backend_with_string(&jni_ctx, backend_with_string_jni_cb);
+}
+
+
+// ======================================================================================
+// ======================================================================================
+// ======================================================================================
+
+
+static void backend_with_string_async_jni_cb(void *user_data, const char *result) {
+    JniContextAsync *ctx = (JniContextAsync*)user_data;
+
+    JNIEnv *new_env;
+    (*ctx->vm)->AttachCurrentThread(ctx->vm, (void**)&new_env, 0);
+
+    jstring java_result = (*new_env)->NewStringUTF(new_env, result);
+
+    (*new_env)->ExceptionClear(new_env);
+    (*new_env)->CallVoidMethod(new_env, ctx->obj, ctx->cb_method_id, java_result);
+
+    (*new_env)->DeleteGlobalRef(new_env, ctx->obj);
+
+    // After JVM is detached, env etc will no longer be valid; so perform everything that uses them
+    // before this, like DeleteGlobalRef() etc., else there will be seg-fault
+    (*ctx->vm)->DetachCurrentThread(ctx->vm);
+
+    free(ctx);
+}
+
+JNIEXPORT void JNICALL Java_Frontend_BackendWithStringAsyncJNI(
+        JNIEnv *env,
+        jobject obj,
+        jstring cb_name
+) {
+    const char *cb_name_cstr = (*env)->GetStringUTFChars(env, cb_name, 0);
+
+    jclass obj_class = (*env)->GetObjectClass(env, obj);
+
+    jmethodID cb_method_id = (*env)->GetMethodID(
+            env,
+            obj_class,
+            cb_name_cstr,
+            "(Ljava/lang/String;)V");
+
+    (*env)->ReleaseStringUTFChars(env, cb_name, cb_name_cstr);
+
+    if(!cb_method_id) {
+        printf("ERROR!! Could not get the callback method's id!\n");
+        return;
+    }
+
+    JniContextAsync *jni_ctx = (JniContextAsync*)malloc(sizeof(JniContextAsync));
+    // On things that persist or don't persist between threads, have a look at:
+    // https://stackoverflow.com/a/13417898/1060004
+    (*env)->GetJavaVM(env, &jni_ctx->vm);
+    jni_ctx->obj = (*env)->NewGlobalRef(env, obj);
+    jni_ctx->cb_method_id = cb_method_id;
+
+    backend_with_string_async(jni_ctx, backend_with_string_async_jni_cb);
 }
