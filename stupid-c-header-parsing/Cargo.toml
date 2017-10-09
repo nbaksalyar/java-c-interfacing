@@ -1,0 +1,9 @@
+[package]
+name = "xml-parse"
+version = "0.1.0"
+authors = ["ustulation <ustulation@gmail.com>"]
+
+[dependencies]
+unwrap = "*"
+xml-rs = "*"
+regex = "*"
