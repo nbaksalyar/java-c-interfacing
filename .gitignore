@@ -4,3 +4,4 @@ build/
 *.dylib
 *.a
 *.class
+*.sublime-*
