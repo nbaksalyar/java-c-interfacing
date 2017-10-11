@@ -1,6 +1,11 @@
 #pragma once
 
-#include <assert.h>
+#include <iostream>
+#include <string>
+#include <cassert>
+#include <jni.h>
+
+#include "backend.h"
 
 static JavaVM* jvm = nullptr;
 
@@ -12,8 +17,8 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     return JNI_VERSION_1_8;
 }
 
-// Convert C struct to its Java counterpart.
-jobject convertToJava(JNIEnv* env, const char* class_name, const void* input) {
+// Wrap the C struct in the Java wrapper.
+jobject wrap(JNIEnv* env, const char* class_name, const void* input) {
     jclass klass = env->FindClass(class_name);
     assert(klass);
 
@@ -29,25 +34,113 @@ jobject convertToJava(JNIEnv* env, const char* class_name, const void* input) {
     return output;
 }
 
-void callback_wrapper(void* ctx, const FfiResult* result, const AuthResp* auth_resp) {
+// Helper
+template<typename... F>
+void call_cb(void* ctx, const FfiResult* result, const char* cb_class, const char* cb_method, const char* args_sig = "", F... wrap_args) {
     JNIEnv* env = nullptr;
     jvm->AttachCurrentThread((void**) &env, nullptr);
-
     jobject obj = (jobject) ctx;
 
-    const jclass callbackClass = env->FindClass("Callback");
+    const jclass callbackClass = env->FindClass(cb_class);
     assert(callbackClass);
 
-    const jmethodID method = env->GetMethodID(callbackClass, "call", "(LFfiResult;LAuthResp;)V");
-    assert(method);
+    std::string sig("(LFfiResult;");
+    sig.append(args_sig);
+    sig.append(")V");
 
-    jobject j_result = convertToJava(env, "FfiResult", result);
-    jobject j_auth_resp = convertToJava(env, "AuthResp", auth_resp);
+    const jmethodID method = env->GetMethodID(callbackClass, cb_method, sig.c_str());
+    assert(method);
 
     // TODO: handle exceptions thrown from inside the callback.
 
-    env->CallVoidMethod(obj, method, j_result, j_auth_resp);
-    env->DeleteGlobalRef(obj);
+    env->CallVoidMethod(obj,
+                        method,
+                        wrap(env, "FfiResult", result),
+                        wrap_args(env)...);
 
+    env->DeleteGlobalRef(obj);
     jvm->DetachCurrentThread();
+}
+
+// Helper
+template<typename T>
+void call_cb_object(void* ctx, const FfiResult* result, const char* name, const T* arg) {
+    call_cb(ctx, result, "Callback1", "call", "Ljava/lang/Object;", [=](auto env) {
+        return wrap(env, name, arg);
+    });
+}
+
+// Helper
+template<typename T>
+void call_cb_object_array(void* ctx, const FfiResult* result, const char* name, const T* ptr, size_t len) {
+    call_cb(ctx, result, "Callback1", "call", "Ljava/lang/Object;", [=](auto env) {
+        jclass elementClass = env->FindClass(name);
+        assert(elementClass);
+
+        auto array = env->NewObjectArray(len, elementClass, 0);
+        assert(array);
+
+        for (auto i = 0; i < len; ++i) {
+            env->SetObjectArrayElement(array, i, wrap(env, name, ptr + i));
+        }
+
+        return array;
+    });
+}
+
+
+
+void call_cb_void(void* ctx, const FfiResult* result) {
+    call_cb(ctx, result, "Callback0", "call");
+}
+
+void call_cb_i32(void* ctx, const FfiResult* result, int32_t arg) {
+    call_cb(ctx, result, "CallbackInt", "call", "I", [=](auto env) {
+        return (jint) arg;
+    });
+}
+
+void call_cb_string(void* ctx, const FfiResult* result, const char* arg) {
+    call_cb(ctx, result, "Callback1", "call", "Ljava/lang/Object;", [=](auto env) {
+        return env->NewStringUTF(arg);
+    });
+}
+
+void call_cb_Key(void* ctx, const FfiResult* result, const Key* arg) {
+    call_cb_object(ctx, result, "Key", arg);
+}
+
+void call_cb_i32_array(void* ctx, const FfiResult* result, const int32_t* ptr, size_t len) {
+    call_cb(ctx, result, "Callback1", "call", "Ljava/lang/Object;", [=](auto env) {
+        auto array = env->NewIntArray(len);
+        env->SetIntArrayRegion(array, 0, len, ptr);
+        return array;
+    });
+}
+
+void call_cb_Key_array(void* ctx, const FfiResult* result, const Key* ptr, size_t len) {
+    call_cb_object_array(ctx, result, "Key", ptr, len);
+}
+
+void call_cb_i32_string_Key(void* ctx,
+                            const FfiResult* result,
+                            int32_t arg0,
+                            const char* arg1,
+                            const Key* arg2)
+{
+    call_cb(
+        ctx, result, "CallbackIntStringKey", "call", "ILjava/lang/String;LKey;",
+        [=](auto env) { return (jint) arg0; },
+        [=](auto env) { return env->NewStringUTF(arg1); },
+        [=](auto env) { return wrap(env, "Key", arg2); }
+    );
+}
+
+void call_create_account_connect_cb(void* ctx, const FfiResult* result, const AppInfo* app_info) {
+    call_cb(ctx, result, "CreateAccountHandler", "onConnect", "LAppInfo;",
+            [=](auto env) { return wrap(env, "AppInfo", app_info); });
+}
+
+void call_create_account_disconnect_cb(void* ctx, const FfiResult* result) {
+    call_cb(ctx, result, "CreateAccountHandler", "onDisconnect");
 }

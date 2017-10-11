@@ -2,36 +2,56 @@
 #define _BACKEND_H_
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cpulsplus
 extern "C" {
 #endif
+    typedef struct Key {
+        int8_t bytes[8];
+    } Key;
 
     typedef struct AppInfo {
-        char *p_id;
-        char *p_name;
-        char *p_vendor;
+        int32_t id;
+        char* name;
+        Key key;
     } AppInfo;
-
-    typedef struct AuthReq {
-        AppInfo *p_info;
-        bool needs_own_container;
-        uint64_t req_id;
-    } AuthReq;
-
-    typedef struct AuthResp {
-        char *p_msg;
-        uint64_t orig_req_id;
-    } AuthResp;
 
     typedef struct FfiResult {
         int32_t error_code;
-        char *p_error;
+        char* error;
     } FfiResult;
 
-    typedef void(*callback_t)(void*, const FfiResult*, const AuthResp*);
-    void backend_on_auth_request(const AuthReq *p_auth_req, void *ctx, callback_t o_cb);
+    typedef void(*cb_t)(void*, const FfiResult*);
+    typedef void(*cb_i32_t)(void*, const FfiResult*, int32_t);
+    typedef void(*cb_string_t)(void*, const FfiResult*, const char*);
+    typedef void(*cb_i32_array_t)(void*, const FfiResult*, const int32_t*, size_t);
+    typedef void(*cb_Key_t)(void*, const FfiResult*, const Key*);
+    typedef void(*cb_Key_array_t)(void*, const FfiResult*, const Key*, size_t);
+    typedef void(*cb_i32_string_Key_t)(void*, const FfiResult*, int32_t, const char*, const Key*);
+    typedef void(*cb_AppInfo_t)(void*, const FfiResult*, const AppInfo*);
+
+    // One callback with 0 params
+    void register_app(const AppInfo* app_info, void* ctx, cb_t o_cb);
+    // One callback with one primitive (int) param
+    void get_app_id(const AppInfo* app_info, void* ctx, cb_i32_t o_cb);
+    // One callback with one string param
+    void get_app_name(const AppInfo* app_info, void* ctx, cb_string_t o_cb);
+    // One callback with native struct param
+    void get_app_key(const AppInfo* app_info, void* ctx, cb_Key_t o_cb);
+    // One callback with array or ints param
+    void random_numbers(void* ctx, cb_i32_array_t o_cb);
+    // One callback with array of native structs param
+    void random_keys(void* ctx, cb_Key_array_t o_cb);
+    // One callback with multiple arguments
+    void get_app_info(const AppInfo* app_info, void* ctx, cb_i32_string_Key_t o_cb);
+    // Multiple callbacks
+    void create_account(const char*  locator,
+                        const char*  password,
+                        void*        ctx,
+                        cb_AppInfo_t o_connect_cb,
+                        cb_t         o_disconnect_cb);
 
 #ifdef __cpulsplus
 }
