@@ -27,14 +27,13 @@ class Frontend extends BackendOnAuthReqCb {
 
         System.out.println("Control back in the Java main thread.");
 
-        // Currently C is not deep copying. Ideally after that this should be fine.
-        // req.delete();
-        // info.delete();
-
         try { Thread.sleep(3000); } catch(Exception e) {}
 
-        req.delete();
-        info.delete();
+        // Don't have to do this; they implement finalizers which internally calls delete.
+        // Infact this might lead to double deletes which will be undefined if the pointers are
+        // not nulled out after the first delete.
+        // req.delete();
+        // info.delete();
 
         System.out.println("Exiting Frontend");
     }
