@@ -1,5 +1,6 @@
 #include "backend.h"
 
+#include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <sstream>
@@ -126,3 +127,42 @@ void create_account(const char*  locator,
         o_disconnect_cb(ctx, &result);
     });
 }
+
+void verify_signature(const uint8_t* ptr, size_t len, void* ctx, cb_t o_cb) {
+    std::vector<uint8_t> data(ptr, ptr + len);
+
+    run("verify_signature", [=]() {
+        bool valid = std::any_of(data.begin(), data.end(), [=](auto e) {
+            return e != 0;
+        });
+
+        if (valid) {
+            auto result = ok();
+            o_cb(ctx, &result);
+        } else {
+            FfiResult result = {
+                .error_code = -11,
+                .error = (char*) "Invalid signature",
+            };
+            o_cb(ctx, &result);
+        }
+    });
+}
+
+void verify_keys(const Key* ptr, size_t len, void* ctx, cb_t o_cb) {
+    std::vector<Key> keys(ptr, ptr + len);
+
+    run("verify_keys", [=]() {
+        for (auto& key : keys) {
+            cout << "- C: verify_keys(): [";
+            for (auto b : key.bytes) {
+                cout << (int) b << ", ";
+            }
+            cout << "]" << endl;
+        }
+
+        auto result = ok();
+        o_cb(ctx, &result);
+    });
+}
+

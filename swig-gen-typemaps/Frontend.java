@@ -81,10 +81,34 @@ class Frontend {
         );
 
         // ---
-        // byte[] data = new byte[] { 0, 1, 0, 1, 0, 1, 0, 1 };
-        // NativeBindings.verifySignature(data, (result) -> {
-        //     System.out.println("- Java: verifySignature()");
-        // });
+
+        byte[] data1 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+        byte[] data2 = new byte[] { 1, 1, 1, 2, 1, 1, 2, 1 };
+
+        NativeBindings.verifySignature(data1, (result) -> {
+            System.out.println("- Java: verifySignature(): " + result.getError());
+        });
+
+        NativeBindings.verifySignature(data2, (result) -> {
+            System.out.println("- Java: verifySignature(): " + result.getError());
+        });
+
+        // ---
+
+        Key key0 = new Key();
+        key0.setBytes(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 });
+
+        Key key1 = new Key();
+        key1.setBytes(new byte[] { 1, 1, 1, 1, 1, 1, 1, 1 });
+
+        Key key2 = new Key();
+        key2.setBytes(new byte[] { 2, 2, 2, 2, 2, 2, 2, 2 });
+
+        Key[] keys = new Key[] { key0, key1, key2 };
+
+        NativeBindings.verifyKeys(keys, (result) -> {
+            System.out.println("- Java: verifyKeys()");
+        });
 
         try { Thread.sleep(3000); } catch(Exception e) {}
         System.out.println("- Java: Exiting Frontend");

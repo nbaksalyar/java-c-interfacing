@@ -144,3 +144,30 @@ void call_create_account_connect_cb(void* ctx, const FfiResult* result, const Ap
 void call_create_account_disconnect_cb(void* ctx, const FfiResult* result) {
     call_cb(ctx, result, "CreateAccountHandler", "onDisconnect");
 }
+
+template<typename T>
+void copy_object_array(const char* class_name, JNIEnv* env, jobjectArray array, T*& o_ptr, size_t& o_len) {
+    jclass klass = env->FindClass(class_name);
+    assert(klass);
+
+    std::string sig("(L");
+    sig.append(class_name);
+    sig.append(";)J");
+
+    jmethodID method = env->GetStaticMethodID(klass, "getCPtr", sig.c_str());
+    assert(method);
+
+    size_t len = env->GetArrayLength(array);
+
+    auto temp = new T[len];
+
+    for (size_t i = 0; i < len; ++i) {
+        auto j_object = env->GetObjectArrayElement(array, i);
+        auto c_object = (T*) env->CallStaticLongMethod(klass, method, j_object);
+
+        temp[i] = *c_object;
+    }
+
+    o_ptr = temp;
+    o_len = len;
+}

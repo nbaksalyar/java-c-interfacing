@@ -3,6 +3,9 @@
 %{
 #include "backend.h"
 #include "jni_boilerplate.h"
+#include <vector>
+// TODO: remove
+#include <sstream>
 %}
 
 // Handling of exact integer types (int32_t, ...)
@@ -107,8 +110,7 @@
 %typemap(jstype) (void* ctx, cb_AppInfo_t o_connect_cb, cb_t o_disconnect_cb) "CreateAccountHandler";
 %typemap(jtype)  (void* ctx, cb_AppInfo_t o_connect_cb, cb_t o_disconnect_cb) "CreateAccountHandler";
 %typemap(javain) (void* ctx, cb_AppInfo_t o_connect_cb, cb_t o_disconnect_cb) "$javainput";
-
-%typemap(in) (void* ctx, cb_AppInfo_t o_connect_cb, cb_t o_disconnect_cb) {
+%typemap(in)     (void* ctx, cb_AppInfo_t o_connect_cb, cb_t o_disconnect_cb) {
   $1 = jenv->NewGlobalRef($input);
   jenv->DeleteLocalRef($input);
 
@@ -116,6 +118,22 @@
   $3 = call_create_account_disconnect_cb;
 }
 
+// Array of uint8_t
+%apply(char *STRING, size_t LENGTH) { (const uint8_t* ptr, size_t len) };
+
+// Array of Key
+%typemap(jni)     (const Key* ptr, size_t len) "jobjectArray"
+%typemap(jtype)   (const Key* ptr, size_t len) "Key[]"
+%typemap(jstype)  (const Key* ptr, size_t len) "Key[]"
+%typemap(javain)  (const Key* ptr, size_t len) "$javainput"
+
+%typemap(in)      (const Key* ptr, size_t len) {
+  copy_object_array<Key>("Key", jenv, $input, $1, $2);
+}
+
+%typemap(freearg) (const Key* ptr, size_t len) {
+  delete $1;
+}
 
 // Load the DLL automatically
 %pragma(java) jniclasscode=%{
@@ -125,13 +143,15 @@
 %}
 
 // We can use Java naming convention:
-%rename(createAccount) create_account;
-%rename(getAppId)      get_app_id;
-%rename(getAppInfo)    get_app_info;
-%rename(getAppKey)     get_app_key;
-%rename(getAppName)    get_app_name;
-%rename(randomKeys)    random_keys;
-%rename(randomNumbers) random_numbers;
-%rename(registerApp)   register_app;
+%rename(createAccount)   create_account;
+%rename(getAppId)        get_app_id;
+%rename(getAppInfo)      get_app_info;
+%rename(getAppKey)       get_app_key;
+%rename(getAppName)      get_app_name;
+%rename(randomKeys)      random_keys;
+%rename(randomNumbers)   random_numbers;
+%rename(registerApp)     register_app;
+%rename(verifyKeys)      verify_keys;
+%rename(verifySignature) verify_signature;
 
 %include "backend.h"
