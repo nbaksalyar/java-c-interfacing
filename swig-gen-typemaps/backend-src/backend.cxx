@@ -1,5 +1,6 @@
 #include "backend.h"
 
+#include <chrono>
 #include <iostream>
 #include <sstream>
 #include <thread>
@@ -102,6 +103,8 @@ void create_account(const char*  locator,
                     cb_AppInfo_t o_connect_cb,
                     cb_t         o_disconnect_cb)
 {
+    using namespace std::chrono_literals;
+
     std::string name(locator);
     name.append(":");
     name.append(password);
@@ -116,6 +119,9 @@ void create_account(const char*  locator,
 
         cout << "- C: create_account(): calling connect callback..." << endl;
         o_connect_cb(ctx, &result, &app_info);
+
+        std::this_thread::sleep_for(2s);
+
         cout << "- C: create_account(): calling disconnect callback..." << endl;
         o_disconnect_cb(ctx, &result);
     });

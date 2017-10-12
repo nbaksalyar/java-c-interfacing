@@ -53,6 +53,9 @@ extern "C" {
                         cb_AppInfo_t o_connect_cb,
                         cb_t         o_disconnect_cb);
 
+    // Input array of primitive type
+    void verify_signature(const int8_t* input_ptr, size_t input_len, cb_t o_cb);
+
 #ifdef __cpulsplus
 }
 #endif

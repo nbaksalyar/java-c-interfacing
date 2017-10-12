@@ -13,8 +13,6 @@ class Frontend {
             app.setKey(key);
         }
 
-        /*
-
         NativeBindings.registerApp(app, (result) -> {
             System.out.println("- Java: registerApp()");
         });
@@ -61,8 +59,6 @@ class Frontend {
                                + " }");
         });
 
-        */
-
         // ---
 
         NativeBindings.createAccount("locator", "password",
@@ -83,6 +79,12 @@ class Frontend {
                 }
             }
         );
+
+        // ---
+        // byte[] data = new byte[] { 0, 1, 0, 1, 0, 1, 0, 1 };
+        // NativeBindings.verifySignature(data, (result) -> {
+        //     System.out.println("- Java: verifySignature()");
+        // });
 
         try { Thread.sleep(3000); } catch(Exception e) {}
         System.out.println("- Java: Exiting Frontend");

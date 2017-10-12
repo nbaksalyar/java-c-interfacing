@@ -14,7 +14,7 @@ extern "C"
 jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     jvm = vm;
     // TODO: not sure about this version.
-    return JNI_VERSION_1_8;
+    return JNI_VERSION_1_4;
 }
 
 // Wrap the C struct in the Java wrapper.
@@ -38,7 +38,8 @@ jobject wrap(JNIEnv* env, const char* class_name, const void* input) {
 template<typename... F>
 void call_cb(void* ctx, const FfiResult* result, const char* cb_class, const char* cb_method, const char* args_sig = "", F... wrap_args) {
     JNIEnv* env = nullptr;
-    jvm->AttachCurrentThread((void**) &env, nullptr);
+    jvm->AttachCurrentThreadAsDaemon((void**) &env, nullptr);
+
     jobject obj = (jobject) ctx;
 
     const jclass callbackClass = env->FindClass(cb_class);
@@ -59,7 +60,6 @@ void call_cb(void* ctx, const FfiResult* result, const char* cb_class, const cha
                         wrap_args(env)...);
 
     env->DeleteGlobalRef(obj);
-    jvm->DetachCurrentThread();
 }
 
 // Helper
