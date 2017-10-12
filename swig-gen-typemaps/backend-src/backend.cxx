@@ -30,7 +30,7 @@ void run(const char* name, F body) {
     thread.detach();
 }
 
-void register_app(const AppInfo* app_info, void* ctx, cb_t o_cb)
+void register_app(const AppInfo* app_info, void* ctx, cb_void_t o_cb)
 {
     run("register_app", [=]() {
         auto result = ok();
@@ -102,7 +102,7 @@ void create_account(const char*  locator,
                     const char*  password,
                     void*        ctx,
                     cb_AppInfo_t o_connect_cb,
-                    cb_t         o_disconnect_cb)
+                    cb_void_t         o_disconnect_cb)
 {
     using namespace std::chrono_literals;
 
@@ -128,7 +128,7 @@ void create_account(const char*  locator,
     });
 }
 
-void verify_signature(const uint8_t* ptr, size_t len, void* ctx, cb_t o_cb) {
+void verify_signature(const uint8_t* ptr, size_t len, void* ctx, cb_void_t o_cb) {
     std::vector<uint8_t> data(ptr, ptr + len);
 
     run("verify_signature", [=]() {
@@ -149,7 +149,7 @@ void verify_signature(const uint8_t* ptr, size_t len, void* ctx, cb_t o_cb) {
     });
 }
 
-void verify_keys(const Key* ptr, size_t len, void* ctx, cb_t o_cb) {
+void verify_keys(const Key* ptr, size_t len, void* ctx, cb_void_t o_cb) {
     std::vector<Key> keys(ptr, ptr + len);
 
     run("verify_keys", [=]() {

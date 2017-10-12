@@ -23,7 +23,7 @@ extern "C" {
         char* error;
     } FfiResult;
 
-    typedef void(*cb_t)(void*, const FfiResult*);
+    typedef void(*cb_void_t)(void*, const FfiResult*);
     typedef void(*cb_i32_t)(void*, const FfiResult*, int32_t);
     typedef void(*cb_string_t)(void*, const FfiResult*, const char*);
     typedef void(*cb_i32_array_t)(void*, const FfiResult*, const int32_t*, size_t);
@@ -33,7 +33,7 @@ extern "C" {
     typedef void(*cb_AppInfo_t)(void*, const FfiResult*, const AppInfo*);
 
     // One callback with 0 params
-    void register_app(const AppInfo* app_info, void* ctx, cb_t o_cb);
+    void register_app(const AppInfo* app_info, void* ctx, cb_void_t o_cb);
     // One callback with one primitive (int) param
     void get_app_id(const AppInfo* app_info, void* ctx, cb_i32_t o_cb);
     // One callback with one string param
@@ -51,12 +51,12 @@ extern "C" {
                         const char*  password,
                         void*        ctx,
                         cb_AppInfo_t o_connect_cb,
-                        cb_t         o_disconnect_cb);
+                        cb_void_t    o_disconnect_cb);
 
     // Input array of primitive type
-    void verify_signature(const uint8_t* ptr, size_t len, void* ctx, cb_t o_cb);
+    void verify_signature(const uint8_t* ptr, size_t len, void* ctx, cb_void_t o_cb);
     // Input array of native structs
-    void verify_keys(const Key* ptr, size_t len, void* ctx, cb_t o_cb);
+    void verify_keys(const Key* ptr, size_t len, void* ctx, cb_void_t o_cb);
 
 #ifdef __cpulsplus
 }

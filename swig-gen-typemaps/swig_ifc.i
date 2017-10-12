@@ -3,9 +3,6 @@
 %{
 #include "backend.h"
 #include "jni_boilerplate.h"
-#include <vector>
-// TODO: remove
-#include <sstream>
 %}
 
 // Handling of exact integer types (int32_t, ...)
@@ -13,104 +10,35 @@
 // Handling of arrays
 %include "java/arrays_java.i"
 
-// Callback (const FfiResult*)
-%typemap(jni)    (void* ctx, cb_t o_cb) "jobject";
-%typemap(jstype) (void* ctx, cb_t o_cb) "Callback0";
-%typemap(jtype)  (void* ctx, cb_t o_cb) "Callback0";
-%typemap(javain) (void* ctx, cb_t o_cb) "$javainput";
+%define CALLBACK(signature, java_type)
+  %typemap(jni)    (void* ctx, cb_ ## signature ## _t o_cb) "jobject";
+  %typemap(jstype) (void* ctx, cb_ ## signature ## _t o_cb) "java_type";
+  %typemap(jtype)  (void* ctx, cb_ ## signature ## _t o_cb) "java_type";
+  %typemap(javain) (void* ctx, cb_ ## signature ## _t o_cb) "$javainput";
 
-%typemap(in) (void* ctx, cb_t o_cb) {
-  $1 = jenv->NewGlobalRef($input);
-  jenv->DeleteLocalRef($input);
+  %typemap(in) (void* ctx, cb_ ## signature ## _t o_cb) {
+    $1 = jenv->NewGlobalRef($input);
+    jenv->DeleteLocalRef($input);
 
-  $2 = call_cb_void;
-}
+    $2 = call_cb_ ## signature;
+  }
+%enddef
 
-// Callback (const FfiResult*, int32_t)
-%typemap(jni)    (void* ctx, cb_i32_t o_cb) "jobject";
-%typemap(jstype) (void* ctx, cb_i32_t o_cb) "CallbackInt";
-%typemap(jtype)  (void* ctx, cb_i32_t o_cb) "CallbackInt";
-%typemap(javain) (void* ctx, cb_i32_t o_cb) "$javainput";
+// Single callback
+CALLBACK(void,           Callback0)
+CALLBACK(string,         Callback1<String>)
+CALLBACK(i32,            CallbackInt)
+CALLBACK(i32_array,      Callback1<int[]>)
+CALLBACK(Key,            Callback1<Key>)
+CALLBACK(Key_array,      Callback1<Key[]>)
+CALLBACK(i32_string_Key, CallbackIntStringKey)
 
-%typemap(in) (void* ctx, cb_i32_t o_cb) {
-  $1 = jenv->NewGlobalRef($input);
-  jenv->DeleteLocalRef($input);
-
-  $2 = call_cb_i32;
-}
-
-// Callback (const FfiResult*, const char*)
-%typemap(jni)    (void* ctx, cb_string_t o_cb) "jobject";
-%typemap(jstype) (void* ctx, cb_string_t o_cb) "Callback1<String>";
-%typemap(jtype)  (void* ctx, cb_string_t o_cb) "Callback1<String>";
-%typemap(javain) (void* ctx, cb_string_t o_cb) "$javainput";
-
-%typemap(in) (void* ctx, cb_string_t o_cb) {
-  $1 = jenv->NewGlobalRef($input);
-  jenv->DeleteLocalRef($input);
-
-  $2 = call_cb_string;
-}
-
-// Callback (const FfiResult*, const int32_t*, size_t)
-%typemap(jni)    (void* ctx, cb_i32_array_t o_cb) "jobject";
-%typemap(jstype) (void* ctx, cb_i32_array_t o_cb) "Callback1<int[]>";
-%typemap(jtype)  (void* ctx, cb_i32_array_t o_cb) "Callback1<int[]>";
-%typemap(javain) (void* ctx, cb_i32_array_t o_cb) "$javainput";
-
-%typemap(in) (void* ctx, cb_i32_array_t o_cb) {
-  $1 = jenv->NewGlobalRef($input);
-  jenv->DeleteLocalRef($input);
-
-  $2 = call_cb_i32_array;
-}
-
-// Callback (const FfiResult*, const Key*)
-%typemap(jni)    (void* ctx, cb_Key_t o_cb) "jobject";
-%typemap(jstype) (void* ctx, cb_Key_t o_cb) "Callback1<Key>";
-%typemap(jtype)  (void* ctx, cb_Key_t o_cb) "Callback1<Key>";
-%typemap(javain) (void* ctx, cb_Key_t o_cb) "$javainput";
-
-%typemap(in) (void* ctx, cb_Key_t o_cb) {
-  $1 = jenv->NewGlobalRef($input);
-  jenv->DeleteLocalRef($input);
-
-  $2 = call_cb_Key;
-}
-
-// Callback (const FfiResult*, const Key*, size_t)
-%typemap(jni)    (void* ctx, cb_Key_array_t o_cb) "jobject";
-%typemap(jstype) (void* ctx, cb_Key_array_t o_cb) "Callback1<Key[]>";
-%typemap(jtype)  (void* ctx, cb_Key_array_t o_cb) "Callback1<Key[]>";
-%typemap(javain) (void* ctx, cb_Key_array_t o_cb) "$javainput";
-
-%typemap(in) (void* ctx, cb_Key_array_t o_cb) {
-  $1 = jenv->NewGlobalRef($input);
-  jenv->DeleteLocalRef($input);
-
-  $2 = call_cb_Key_array;
-}
-
-// Callback (const FfiResult*, int32_t, const char*, const Key*)
-%typemap(jni)    (void* ctx, cb_i32_string_Key_t o_cb) "jobject";
-%typemap(jstype) (void* ctx, cb_i32_string_Key_t o_cb) "CallbackIntStringKey";
-%typemap(jtype)  (void* ctx, cb_i32_string_Key_t o_cb) "CallbackIntStringKey";
-%typemap(javain) (void* ctx, cb_i32_string_Key_t o_cb) "$javainput";
-
-%typemap(in) (void* ctx, cb_i32_string_Key_t o_cb) {
-  $1 = jenv->NewGlobalRef($input);
-  jenv->DeleteLocalRef($input);
-
-  $2 = call_cb_i32_string_Key;
-}
-
-// Two callbacks (const FfiResult*, const AppInfo*)
-//               (const FfiResult*)
-%typemap(jni)    (void* ctx, cb_AppInfo_t o_connect_cb, cb_t o_disconnect_cb) "jobject";
-%typemap(jstype) (void* ctx, cb_AppInfo_t o_connect_cb, cb_t o_disconnect_cb) "CreateAccountHandler";
-%typemap(jtype)  (void* ctx, cb_AppInfo_t o_connect_cb, cb_t o_disconnect_cb) "CreateAccountHandler";
-%typemap(javain) (void* ctx, cb_AppInfo_t o_connect_cb, cb_t o_disconnect_cb) "$javainput";
-%typemap(in)     (void* ctx, cb_AppInfo_t o_connect_cb, cb_t o_disconnect_cb) {
+// Two callbacks
+%typemap(jni)    (void* ctx, cb_AppInfo_t o_connect_cb, cb_void_t o_disconnect_cb) "jobject";
+%typemap(jstype) (void* ctx, cb_AppInfo_t o_connect_cb, cb_void_t o_disconnect_cb) "CreateAccountHandler";
+%typemap(jtype)  (void* ctx, cb_AppInfo_t o_connect_cb, cb_void_t o_disconnect_cb) "CreateAccountHandler";
+%typemap(javain) (void* ctx, cb_AppInfo_t o_connect_cb, cb_void_t o_disconnect_cb) "$javainput";
+%typemap(in)     (void* ctx, cb_AppInfo_t o_connect_cb, cb_void_t o_disconnect_cb) {
   $1 = jenv->NewGlobalRef($input);
   jenv->DeleteLocalRef($input);
 
