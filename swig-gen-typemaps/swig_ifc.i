@@ -1,5 +1,8 @@
 %module NativeBindings;
 
+// Use compile time constants
+%javaconst(1);
+
 %{
 #include "backend.h"
 #include "jni_boilerplate.h"
@@ -25,13 +28,14 @@
 %enddef
 
 // Single callback
-CALLBACK(void,           Callback0)
-CALLBACK(string,         Callback1<String>)
-CALLBACK(i32,            CallbackInt)
-CALLBACK(i32_array,      Callback1<int[]>)
-CALLBACK(Key,            Callback1<Key>)
-CALLBACK(Key_array,      Callback1<Key[]>)
-CALLBACK(i32_string_Key, CallbackIntStringKey)
+CALLBACK(void,               Callback0)
+CALLBACK(i32,                CallbackInt)
+CALLBACK(i32_array,          Callback1<int[]>)
+CALLBACK(string,             Callback1<String>)
+CALLBACK(Key,                Callback1<Key>)
+CALLBACK(Key_array,          Callback1<Key[]>)
+CALLBACK(CreateAccountEvent, Callback1<CreateAccountEvent>)
+CALLBACK(i32_string_Key,     CallbackIntStringKey)
 
 // Two callbacks
 %typemap(jni)    (void* ctx, cb_AppInfo_t o_connect_cb, cb_void_t o_disconnect_cb) "jobject";
@@ -72,6 +76,7 @@ CALLBACK(i32_string_Key, CallbackIntStringKey)
 
 // We can use Java naming convention:
 %rename(createAccount)   create_account;
+%rename(createAccount2)  create_account_2;
 %rename(getAppId)        get_app_id;
 %rename(getAppInfo)      get_app_info;
 %rename(getAppKey)       get_app_key;

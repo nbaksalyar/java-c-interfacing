@@ -58,6 +58,31 @@ extern "C" {
     // Input array of native structs
     void verify_keys(const Key* ptr, size_t len, void* ctx, cb_void_t o_cb);
 
+
+    #define CREATE_ACCOUNT_CONNECT    1
+    #define CREATE_ACCOUNT_DISCONNECT 2
+
+    typedef struct CreateAccountConnect {
+        AppInfo app_info;
+    } CreateAccountConnect;
+
+    typedef struct CreateAccountDisconnect {} CreateAccountDisconnect;
+
+    typedef struct CreateAccountEvent {
+        int type;
+        union {
+            CreateAccountConnect connected;
+            CreateAccountDisconnect disconnected;
+        };
+    } CreateAccountEvent;
+
+    typedef void(*cb_CreateAccountEvent_t)(void*, const FfiResult*, const CreateAccountEvent*);
+
+    void create_account_2(const char* locator,
+                          const char* password,
+                          void* ctx,
+                          cb_CreateAccountEvent_t o_cb);
+
 #ifdef __cpulsplus
 }
 #endif

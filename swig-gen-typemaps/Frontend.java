@@ -82,6 +82,29 @@ class Frontend {
 
         // ---
 
+        // TODO: this currently doesnt' work correctly - the callback gets called
+        // only once.
+        NativeBindings.createAccount2("locator2", "password2", (result, event) -> {
+            switch (event.getType()) {
+                case NativeBindings.CREATE_ACCOUNT_CONNECT:
+                    AppInfo app_info = event.getConnected().getApp_info();
+
+                    System.out.println(
+                          "- Java: createAccount2() [connect]: { id: " + app_info.getId()
+                        + ", name: " + app_info.getName()
+                        + ", key: " + Arrays.toString(app_info.getKey().getBytes())
+                        + " }"
+                    );
+
+                    break;
+                case NativeBindings.CREATE_ACCOUNT_DISCONNECT:
+                    System.out.println("- Java: createAccount2() [disconnect]");
+                    break;
+            }
+        });
+
+        // ---
+
         byte[] data1 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
         byte[] data2 = new byte[] { 1, 1, 1, 2, 1, 1, 2, 1 };
 
@@ -110,7 +133,7 @@ class Frontend {
             System.out.println("- Java: verifyKeys()");
         });
 
-        try { Thread.sleep(3000); } catch(Exception e) {}
+        try { Thread.sleep(10000); } catch(Exception e) {}
         System.out.println("- Java: Exiting Frontend");
     }
 }

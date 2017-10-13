@@ -102,7 +102,7 @@ void create_account(const char*  locator,
                     const char*  password,
                     void*        ctx,
                     cb_AppInfo_t o_connect_cb,
-                    cb_void_t         o_disconnect_cb)
+                    cb_void_t    o_disconnect_cb)
 {
     using namespace std::chrono_literals;
 
@@ -125,6 +125,50 @@ void create_account(const char*  locator,
 
         cout << "- C: create_account(): calling disconnect callback..." << endl;
         o_disconnect_cb(ctx, &result);
+    });
+}
+
+void create_account_2(const char*             locator,
+                      const char*             password,
+                      void*                   ctx,
+                      cb_CreateAccountEvent_t o_cb)
+{
+    using namespace std::chrono_literals;
+
+    std::string name(locator);
+    name.append(":");
+    name.append(password);
+
+    run("create_account_2", [=]() {
+        {
+            cout << "- C: create_account_2(): calling connect callback..." << endl;
+
+            auto result = ok();
+            AppInfo app_info = {
+                .id = 91011,
+                .name = const_cast<char*>(name.c_str()),
+                .key = Key {{ 15, 16, 18, 20, 21, 22, 24, 25 }}
+            };
+
+            CreateAccountEvent event;
+            event.type = CREATE_ACCOUNT_CONNECT;
+            event.connected = CreateAccountConnect { .app_info = app_info };
+
+            o_cb(ctx, &result, &event);
+        }
+
+        std::this_thread::sleep_for(2s);
+
+        {
+            cout << "- C: create_account_2(): calling disconnect callback..." << endl;
+
+            auto result = ok();
+            CreateAccountEvent event;
+            event.type = CREATE_ACCOUNT_DISCONNECT;
+            event.disconnected = CreateAccountDisconnect {};
+
+            o_cb(ctx, &result, &event);
+        }
     });
 }
 

@@ -18,7 +18,8 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved) {
 }
 
 // Wrap the C struct in the Java wrapper.
-jobject wrap(JNIEnv* env, const char* class_name, const void* input) {
+template<typename T>
+jobject wrap(JNIEnv* env, const char* class_name, const T* input) {
     jclass klass = env->FindClass(class_name);
     assert(klass);
 
@@ -36,7 +37,13 @@ jobject wrap(JNIEnv* env, const char* class_name, const void* input) {
 
 // Helper
 template<typename... F>
-void call_cb(void* ctx, const FfiResult* result, const char* cb_class, const char* cb_method, const char* args_sig = "", F... wrap_args) {
+void call_cb(void* ctx,
+             const FfiResult* result,
+             const char* cb_class,
+             const char* cb_method,
+             const char* args_sig = "",
+             F... wrap_args)
+{
     JNIEnv* env = nullptr;
     jvm->AttachCurrentThreadAsDaemon((void**) &env, nullptr);
 
@@ -134,6 +141,10 @@ void call_cb_i32_string_Key(void* ctx,
         [=](auto env) { return env->NewStringUTF(arg1); },
         [=](auto env) { return wrap(env, "Key", arg2); }
     );
+}
+
+void call_cb_CreateAccountEvent(void* ctx, const FfiResult* result, const CreateAccountEvent* arg) {
+    call_cb_object(ctx, result, "CreateAccountEvent", arg);
 }
 
 void call_create_account_connect_cb(void* ctx, const FfiResult* result, const AppInfo* app_info) {
