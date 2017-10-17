@@ -76,9 +76,11 @@ void get_app_name(const AppInfo* app_info, void* ctx, cb_string_t o_cb)
 
 void get_app_key(const AppInfo* app_info, void* ctx, cb_Key_t o_cb)
 {
+    auto key = app_info->key;
+
     run("get_app_key", [=]() {
         auto result = ok();
-        o_cb(ctx, &result, &app_info->key);
+        o_cb(ctx, &result, &key);
     });
 }
 
@@ -112,9 +114,13 @@ void random_keys(void* ctx, cb_Key_array_t o_cb)
 
 void get_app_info(const AppInfo* app_info, void* ctx, cb_i32_string_Key_t o_cb)
 {
+    auto id = app_info->id;
+    std::string name(app_info->name);
+    auto key = app_info->key;
+
     run("get_app_info", [=]() {
         auto result = ok();
-        o_cb(ctx, &result, app_info->id, app_info->name, &app_info->key);
+        o_cb(ctx, &result, id, name.c_str(), &key);
     });
 }
 
