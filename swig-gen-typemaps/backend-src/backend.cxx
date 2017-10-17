@@ -30,6 +30,22 @@ void run(const char* name, F body) {
     thread.detach();
 }
 
+void print_key(std::ostream& s, const Key& key) {
+    cout << "[";
+    for (auto b : key.bytes) {
+        cout << (int) b << ", ";
+    }
+    cout << "]";
+}
+
+void print_app_info(std::ostream& s, const AppInfo& app_info) {
+        cout << "{ id: " << app_info.id
+             << ", name: " << app_info.name
+             << ", key: ";
+        print_key(cout, app_info.key);
+        cout << "}";
+}
+
 void register_app(const AppInfo* app_info, void* ctx, cb_void_t o_cb)
 {
     run("register_app", [=]() {
@@ -40,17 +56,21 @@ void register_app(const AppInfo* app_info, void* ctx, cb_void_t o_cb)
 
 void get_app_id(const AppInfo* app_info, void* ctx, cb_i32_t o_cb)
 {
+    auto id = app_info->id;
+
     run("get_app_id", [=]() {
         auto result = ok();
-        o_cb(ctx, &result, app_info->id);
+        o_cb(ctx, &result, id);
     });
 }
 
 void get_app_name(const AppInfo* app_info, void* ctx, cb_string_t o_cb)
 {
+    std::string name(app_info->name);
+
     run("get_app_name", [=]() {
         auto result = ok();
-        o_cb(ctx, &result, app_info->name);
+        o_cb(ctx, &result, name.c_str());
     });
 }
 
@@ -198,11 +218,9 @@ void verify_keys(const Key* ptr, size_t len, void* ctx, cb_void_t o_cb) {
 
     run("verify_keys", [=]() {
         for (auto& key : keys) {
-            cout << "- C: verify_keys(): [";
-            for (auto b : key.bytes) {
-                cout << (int) b << ", ";
-            }
-            cout << "]" << endl;
+            cout << "- C: verify_keys(): ";
+            print_key(cout, key);
+            cout << endl;
         }
 
         auto result = ok();

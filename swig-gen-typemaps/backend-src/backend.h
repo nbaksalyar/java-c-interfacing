@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#ifdef __cpulsplus
+#ifdef __cplusplus
 extern "C" {
 #endif
     typedef struct Key {
@@ -66,7 +66,9 @@ extern "C" {
         AppInfo app_info;
     } CreateAccountConnect;
 
-    typedef struct CreateAccountDisconnect {} CreateAccountDisconnect;
+    typedef struct CreateAccountDisconnect {
+        uint8_t _dummy;
+    } CreateAccountDisconnect;
 
     typedef struct CreateAccountEvent {
         int type;
@@ -82,8 +84,7 @@ extern "C" {
                           const char* password,
                           void* ctx,
                           cb_CreateAccountEvent_t o_cb);
-
-#ifdef __cpulsplus
+#ifdef __cplusplus
 }
 #endif
 

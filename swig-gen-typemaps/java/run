@@ -2,8 +2,7 @@
 
 set -e;
 
-backend_src_dir="./backend-src";
-
+backend_src_dir="./../backend-src";
 java_build_dir="./build/java";
 java_class_dir="${java_build_dir}"/class;
 native_build_dir="./build/native";
