@@ -2,8 +2,7 @@
 
 set -e;
 
-backend_src_dir="./backend-src";
-
+backend_src_dir="./../backend-src";
 java_build_dir="./build/java";
 java_class_dir="${java_build_dir}"/class;
 native_build_dir="./build/native";
@@ -22,11 +21,10 @@ fi
 
 swig -java -c++ -I"${backend_src_dir}" -o "${native_build_dir}"/java_wrap.cxx -outdir "${java_build_dir}" swig_ifc.i
 
-g++ -shared -O2 -s -fPIC "${backend_src_dir}"/backend.c -I"${backend_src_dir}" -o "${native_build_dir}"/libbackend.so;
+g++ -std=c++14 -shared -O2 -s -fPIC "${backend_src_dir}"/backend.cxx -I"${backend_src_dir}" -o "${native_build_dir}"/libbackend.so;
+g++ -std=c++14 -shared -O2 -s -fPIC "${native_build_dir}"/java_wrap.cxx -I. -I"${java_build_dir}" -I"${backend_src_dir}" -I/usr/lib/jvm/default-java/include/ -I/usr/lib/jvm/default-java/include/linux -L"${native_build_dir}" -lbackend -o "${native_build_dir}"/libfrontend.so;
 
-g++ -shared -O2 -s -fPIC "${native_build_dir}"/java_wrap.cxx -I. -I"${java_build_dir}" -I"${backend_src_dir}" -I/usr/lib/jvm/default-java/include/ -I/usr/lib/jvm/default-java/include/linux -L"${native_build_dir}" -lbackend -o "${native_build_dir}"/libfrontend.so;
-
-javac -d "${java_class_dir}" -cp "${java_build_dir}" Callback.java;
+javac -d "${java_class_dir}" -cp "${java_build_dir}" callbacks/*.java;
 javac -d "${java_class_dir}" -cp "${java_build_dir}:${java_class_dir}" Frontend.java;
 
 LD_LIBRARY_PATH="${native_build_dir}" java -Djava.library.path="${native_build_dir}" -cp "${java_class_dir}" Frontend;
