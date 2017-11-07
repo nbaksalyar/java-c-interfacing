@@ -2,21 +2,35 @@
 
 set -e;
 
-backend_src_dir="./../backend-src";
-native_build_dir="./build/native";
-java_class_dir="./build/java";
+backend_src_dir="./../backend-src"
+native_build_dir="./build/native"
+java_class_dir="./build/java"
 
 if [ ! -d "${native_build_dir}" ]; then
     mkdir -p ${native_build_dir}
 fi
 
 if [ ! -d "${java_class_dir}" ]; then
-    mkdir -p ${java_class_dir};
+    mkdir -p ${java_class_dir}
 fi
 
-g++ -std=c++14 -shared -O2 -s -fPIC "${backend_src_dir}"/backend.cxx -I"${backend_src_dir}" -o "${native_build_dir}"/libbackend.so;
-g++ -std=c++14 -shared -O2 -s -fPIC bindings/frontend.cxx -I. -I"${backend_src_dir}" -I/usr/lib/jvm/default-java/include/ -I/usr/lib/jvm/default-java/include/linux -L"${native_build_dir}" -lbackend -o "${native_build_dir}"/libfrontend.so;
+g++ -std=c++14 -shared -O2 -s -fPIC "${backend_src_dir}"/backend.cxx -I"${backend_src_dir}" -o "${native_build_dir}"/libbackend.so
 
-javac -d "${java_class_dir}" -cp "${java_class_dir}" Frontend.java bindings/*.java;
+case $1 in
+"cpp"|"c++")
+    g++ -std=c++14 -shared -O2 -s -fPIC bindings/frontend.cxx -I. -I"${backend_src_dir}" -I/usr/lib/jvm/default-java/include/ -I/usr/lib/jvm/default-java/include/linux -L"${native_build_dir}" -lbackend -o "${native_build_dir}"/libfrontend.so
+    ;;
+"rust")
+    cargo build --manifest-path=bindings/rust/Cargo.toml
+    cp bindings/rust/target/debug/*.so "${native_build_dir}"/
+    ;;
+*)
+    echo "Usage:"
+    echo "    $0 c++  - use C++ JNI boilerplate"
+    echo "    $0 rust - use rust JNI boilerplate"
+    exit
+    ;;
+esac
 
-LD_LIBRARY_PATH="${native_build_dir}" java -Djava.library.path="${native_build_dir}" -cp "${java_class_dir}" Frontend;
+javac -d "${java_class_dir}" -cp "${java_class_dir}" Frontend.java bindings/*.java
+LD_LIBRARY_PATH="${native_build_dir}" java -Djava.library.path="${native_build_dir}" -cp "${java_class_dir}" Frontend

@@ -154,6 +154,7 @@ void create_account(const char*  locator,
     });
 }
 
+/*
 void create_account_2(const char*             locator,
                       const char*             password,
                       void*                   ctx,
@@ -197,6 +198,7 @@ void create_account_2(const char*             locator,
         }
     });
 }
+*/
 
 void verify_signature(const uint8_t* ptr, size_t len, void* ctx, cb_void_t o_cb) {
     std::vector<uint8_t> data(ptr, ptr + len);
