@@ -1,0 +1,14 @@
+[package]
+name = "frontend"
+version = "0.1.0"
+authors = ["Adam Cigánek <adam.ciganek@gmail.com>"]
+
+[dependencies]
+jni = "*"
+lazy_static = "*"
+
+[build-dependencies]
+bindgen = "=0.31.3"
+
+[lib]
+crate_type = ["cdylib"]

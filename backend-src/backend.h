@@ -58,7 +58,7 @@ extern "C" {
     // Input array of native structs
     void verify_keys(const Key* ptr, size_t len, void* ctx, cb_void_t o_cb);
 
-
+    /*
     #define CREATE_ACCOUNT_CONNECT    1
     #define CREATE_ACCOUNT_DISCONNECT 2
 
@@ -84,6 +84,7 @@ extern "C" {
                           const char* password,
                           void* ctx,
                           cb_CreateAccountEvent_t o_cb);
+    */
 #ifdef __cplusplus
 }
 #endif
