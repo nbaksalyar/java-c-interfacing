@@ -4,6 +4,8 @@ extern crate jni;
 
 // Extensions for the JNI crate.
 mod jni_ext;
+#[macro_use]
+mod macros;
 
 use jni::JNIEnv;
 use jni::objects::{GlobalRef, JClass, JObject, JString};
@@ -420,9 +422,7 @@ pub unsafe extern "system" fn Java_NativeBindings_registerApp(
     cb: JObject,
 ) {
     let app_info = backend::AppInfo::from_java(&env, app_info);
-
-    let ctx = env.new_global_ref(cb).unwrap().into_raw_ptr();
-    env.delete_local_ref(cb).unwrap();
+    let ctx = gen_ctx!(env, cb);
 
     backend::register_app(&app_info, ctx, Some(call))
 }
@@ -435,9 +435,7 @@ pub unsafe extern "system" fn Java_NativeBindings_getAppId(
     cb: JObject,
 ) {
     let app_info = backend::AppInfo::from_java(&env, app_info);
-
-    let ctx = env.new_global_ref(cb).unwrap().into_raw_ptr();
-    env.delete_local_ref(cb).unwrap();
+    let ctx = gen_ctx!(env, cb);
 
     backend::get_app_id(&app_info, ctx, Some(call_int));
 }
@@ -450,9 +448,7 @@ pub unsafe extern "system" fn Java_NativeBindings_getAppName(
     cb: JObject,
 ) {
     let app_info = backend::AppInfo::from_java(&env, app_info);
-
-    let ctx = env.new_global_ref(cb).unwrap().into_raw_ptr();
-    env.delete_local_ref(cb).unwrap();
+    let ctx = gen_ctx!(env, cb);
 
     backend::get_app_name(&app_info, ctx, Some(call_String));
 }
@@ -465,9 +461,7 @@ pub unsafe extern "system" fn Java_NativeBindings_getAppKey(
     cb: JObject,
 ) {
     let app_info = backend::AppInfo::from_java(&env, app_info);
-
-    let ctx = env.new_global_ref(cb).unwrap().into_raw_ptr();
-    env.delete_local_ref(cb).unwrap();
+    let ctx = gen_ctx!(env, cb);
 
     backend::get_app_key(&app_info, ctx, Some(call_Key));
 }
@@ -478,9 +472,7 @@ pub unsafe extern "system" fn Java_NativeBindings_randomNumbers(
     _class: JClass,
     cb: JObject,
 ) {
-    let ctx = env.new_global_ref(cb).unwrap().into_raw_ptr();
-    env.delete_local_ref(cb).unwrap();
-
+    let ctx = gen_ctx!(env, cb);
     backend::random_numbers(ctx, Some(call_array_int));
 }
 
@@ -490,9 +482,7 @@ pub unsafe extern "system" fn Java_NativeBindings_randomKeys(
     _class: JClass,
     cb: JObject,
 ) {
-    let ctx = env.new_global_ref(cb).unwrap().into_raw_ptr();
-    env.delete_local_ref(cb).unwrap();
-
+    let ctx = gen_ctx!(env, cb);
     backend::random_keys(ctx, Some(call_array_Key));
 }
 
@@ -504,9 +494,7 @@ pub unsafe extern "system" fn Java_NativeBindings_getAppInfo(
     cb: JObject,
 ) {
     let app_info = backend::AppInfo::from_java(&env, app_info);
-
-    let ctx = env.new_global_ref(cb).unwrap().into_raw_ptr();
-    env.delete_local_ref(cb).unwrap();
+    let ctx = gen_ctx!(env, cb);
 
     backend::get_app_info(&app_info, ctx, Some(call_int_String_Key));
 }
@@ -522,15 +510,7 @@ pub unsafe extern "system" fn Java_NativeBindings_createAccount(
 ) {
     let arg0 = CString::from_java(&env, arg0);
     let arg1 = CString::from_java(&env, arg1);
-
-    let ctx = [
-        Some(env.new_global_ref(cb0).unwrap()),
-        Some(env.new_global_ref(cb1).unwrap()),
-    ];
-    let ctx = Box::into_raw(Box::new(ctx)) as *mut c_void;
-
-    env.delete_local_ref(cb0).unwrap();
-    env.delete_local_ref(cb1).unwrap();
+    let ctx = gen_ctx!(env, cb0, cb1);
 
     backend::create_account(
         arg0.as_ptr(),
@@ -551,9 +531,7 @@ pub unsafe extern "system" fn Java_NativeBindings_verifySignature(
     // TODO: instead of copying the data from the java array, we can "borrow" it
     // and then release it at the end - potentially avoiding the copy.
     let arg = Vec::from_java(&env, arg);
-
-    let ctx = env.new_global_ref(cb).unwrap().into_raw_ptr();
-    env.delete_local_ref(cb).unwrap();
+    let ctx = gen_ctx!(env, cb);
 
     backend::verify_signature(arg.as_ptr(), arg.len(), ctx, Some(call));
 }
@@ -566,9 +544,7 @@ pub unsafe extern "system" fn Java_NativeBindings_verifyKeys(
     cb: JObject,
 ) {
     let arg = Vec::from_java(&env, arg);
-
-    let ctx = env.new_global_ref(cb).unwrap().into_raw_ptr();
-    env.delete_local_ref(cb).unwrap();
+    let ctx = gen_ctx!(env, cb);
 
     backend::verify_keys(arg.as_ptr(), arg.len(), ctx, Some(call));
 }
