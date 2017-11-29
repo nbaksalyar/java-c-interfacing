@@ -1,0 +1,1 @@
+/home/nikita/maidsafe/java-c-interfacing/autogen-java/src/../../../moz-cheddar/jni.rs
