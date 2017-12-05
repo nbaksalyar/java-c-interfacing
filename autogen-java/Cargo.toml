@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Adam Cigánek <adam.ciganek@gmail.com>"]
 
 [dependencies]
-jni = "0.7.2"
+jni = "0.8.0"
 ffi_utils = { path = "../../safe_client_libs/ffi_utils" }
 safe_app = { path = "../../safe_client_libs/safe_app" }
 safe_core = { path = "../../safe_client_libs/safe_core" }

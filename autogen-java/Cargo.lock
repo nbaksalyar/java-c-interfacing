@@ -3,7 +3,7 @@ name = "frontend"
 version = "0.1.0"
 dependencies = [
  "ffi_utils 0.3.0",
- "jni 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "jni 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "safe_app 0.4.0",
  "safe_core 0.27.0",
 ]
@@ -452,7 +452,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "jni"
-version = "0.7.2"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "cesu8 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1413,7 +1413,7 @@ dependencies = [
 "checksum iovec 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "b6e8b9c2247fcf6c6a1151f1156932be5606c9fd6f55a2d7f9fc1cb29386b2f7"
 "checksum itertools 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)" = "d3f2be4da1690a039e9ae5fd575f706a63ad5a2120f161b1d653c9da3930dd21"
 "checksum itoa 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)" = "8324a32baf01e2ae060e9de58ed0bc2320c9a2833491ee36cd3b4c414de4db8c"
-"checksum jni 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)" = "3a63af51feb688a81ef213f995665bc57c4c169deb842e98525a0394e27316e7"
+"checksum jni 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "feb79845b817dc001acb304b0b7d5d1777144299aaf2a684dfca50b3ed790dc4"
 "checksum jni-sys 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8eaf4bc02d17cbdd7ff4c7438cafcdf7fb9a4613313ad11b4f8fefe7d3fa0130"
 "checksum kernel32-sys 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "7507624b29483431c0ba2d82aece8ca6cdba9382bff4ddd0f7490560c056098d"
 "checksum language-tags 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "a91d884b6667cd606bb5a69aa0c99ba811a115fc68915e7056ec08a46e93199a"

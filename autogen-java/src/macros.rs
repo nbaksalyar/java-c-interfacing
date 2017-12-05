@@ -2,9 +2,9 @@
 macro_rules! gen_ctx {
     ($env:ident, $cb:ident) => {
         {
-            let ctx = $env.new_global_ref($cb).unwrap().into_raw_ptr();
+            let ctx = $env.new_global_ref($cb).unwrap().detach().unwrap();
             $env.delete_local_ref($cb).unwrap();
-            ctx
+            ctx.into_inner() as *mut c_void
         }
     };
 
