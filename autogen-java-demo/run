@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+native_build_dir="./build/native"
+java_class_dir="./build/java"
+
+javac -d "${java_class_dir}" -cp "${java_class_dir}" Frontend.java bindings/*.java &&
+LD_LIBRARY_PATH="${native_build_dir}" java -Djava.library.path="${native_build_dir}" -cp "${java_class_dir}" Frontend
+
